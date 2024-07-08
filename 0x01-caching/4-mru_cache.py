@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """MRU Caching system demonstration"""
 
+
 BaseCaching = __import__('base_caching').BaseCaching
 
 
@@ -17,6 +18,12 @@ class MRUCache(BaseCaching):
         super().__init__()
 
     def put(self, key, item):
+        """Updates the cache with the given key and item.
+
+        Args:
+            key (str): The key to add to the cache.
+            item (any): The item to add to the cache.
+        """
         if key is not None and item is not None:
             if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
                 # Find the Most Recently Used item and remove it
