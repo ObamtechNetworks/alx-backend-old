@@ -1,35 +1,45 @@
 #!/usr/bin/env python3
 """FIFO Caching system demonstration"""
 
-
 BaseCaching = __import__('base_caching').BaseCaching
-
 
 class FIFOCache(BaseCaching):
     """A class for FIFO caching system 
 
     Args:
-        BaseCaching (Base Class for caching): parent class template for caching
+        BaseCaching (Base Class for caching):
+        parent class template for caching
     """
-    # Inherit base class contructor
     def __init__(self):
-        """Contructor intialization
+        """Constructor initialization
         """
         super().__init__()
     
     def put(self, key, item):
-        """Updates the cache"""
+        """Updates the cache with the given key and item.
+
+        Args:
+            key (str): The key to add to the cache.
+            item (any): The item to add to the cache.
+        """
         if key and item:
             if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                # discard the first item put in cache (FIFO Algo)
+                # Discard the first item put in cache (FIFO Algorithm)
                 rm_key = next(iter(self.cache_data))
-                # print DISCARD with the key discarded and a new line
-                print("DISCARD: {}".format(rm_key))
-                # remove the first item
-                del self.cache_data[rm_key]
+                print("DISCARD: {}".format(rm_key))  # Print DISCARD wt key
+                del self.cache_data[rm_key]  # Remove the first item
             self.cache_data[key] = item
 
     def get(self, key):
-        """returns an item based on key specified"""
+        """Returns an item from the cache based on the specified key.
+
+        Args:
+            key (str): The key to retrieve from the cache.
+
+        Returns:
+            any: The item associated with the key,
+            or None if the key is not found.
+        """
         if key is not None and key in self.cache_data:
             return self.cache_data[key]
+        return None
