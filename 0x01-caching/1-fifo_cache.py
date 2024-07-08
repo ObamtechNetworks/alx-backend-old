@@ -3,8 +3,9 @@
 
 BaseCaching = __import__('base_caching').BaseCaching
 
+
 class FIFOCache(BaseCaching):
-    """A class for FIFO caching system 
+    """A class for FIFO caching system
 
     Args:
         BaseCaching (Base Class for caching):
@@ -14,7 +15,7 @@ class FIFOCache(BaseCaching):
         """Constructor initialization
         """
         super().__init__()
-    
+
     def put(self, key, item):
         """Updates the cache with the given key and item.
 
