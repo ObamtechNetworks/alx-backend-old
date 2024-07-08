@@ -26,7 +26,7 @@ class MRUCache(BaseCaching):
             item (any): The item to add to the cache.
         """
         if key is not None and item is not None:
-            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+            if len(self.cache_data) == BaseCaching.MAX_ITEMS:
                 # Evict the most recently used item
                 mru_key = next(reversed(list(self.cache_data.items())))
                 print(f"DISCARD: {mru_key[0]}")  # Print key discarded
