@@ -35,8 +35,9 @@ class LFUCache(BaseCaching):
     def __init__(self):
         """Initializes the LFUCache instance."""
         super().__init__()
-        self.access_frequency = {}  # Track access frequency of keys
-        self.access_order = []  # Track access order of keys
+        self.frequency = {}  # Frequency counter for each key
+        self.usage_order = {}  # Tracks the order of usage for LRU fallback
+        self.current_time = 0  # counter to keep track of the order of usage
 
     def put(self, key, item):
         """Adds or updates an item in the cache.
@@ -53,45 +54,27 @@ class LFUCache(BaseCaching):
             return
 
         # Add or update the item in the cache
+        if key in self.cache_data:
+            self.cache_data[key] = item
+            self.frequency[key] += 1
+            self.usage_order[key] = self.current_time
+            self.current_time += 1
+            return
+
+        if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+            # Find the least frequently used item
+            lfu_key = min(self.frequency,
+                          key=lambda k: (self.frequency[k],
+                                         self.usage_order[k]))
+            print(f"DISCARD: {lfu_key}")
+            del self.cache_data[lfu_key]
+            del self.frequency[lfu_key]
+            del self.usage_order[lfu_key]
+
         self.cache_data[key] = item
-
-        if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-            if self.access_frequency:
-                # Find the item with the minimum access frequency
-                min_frequency = min(self.access_frequency.values())
-                items_with_min_frequency = [
-                    k for k, v in self.access_frequency.items()
-                    if v == min_frequency]
-
-                # If there are multiple items with the same minimum frequency,
-                # use LRU to decide which one to discard
-                if self.access_order:
-                    lru_key = None
-                    for key in self.access_order:
-                        if key in items_with_min_frequency:
-                            lru_key = key
-                            break
-
-                    if lru_key:
-                        print("DISCARD: {}".format(lru_key))
-                        del self.cache_data[lru_key]
-                        del self.access_frequency[lru_key]
-                        self.access_order.remove(lru_key)
-                else:
-                    # If access_order is empty
-                    # fall back to a simple eviction strategy
-                    lfu_key = items_with_min_frequency[0]
-                    print("DISCARD: {}".format(lfu_key))
-                    del self.cache_data[lfu_key]
-                    del self.access_frequency[lfu_key]
-            else:
-                # If access_frequency is empty,
-                # fall back to a simple eviction strategy
-                if self.access_order:
-                    lru_key = self.access_order[0]
-                    print("DISCARD: {}".format(lru_key))
-                    del self.cache_data[lru_key]
-                    self.access_order.remove(lru_key)
+        self.frequency[key] = 1
+        self.usage_order[key] = self.current_time
+        self.current_time += 1
 
     def get(self, key):
         """Retrieves an item from the cache based on the specified key.
@@ -103,21 +86,9 @@ class LFUCache(BaseCaching):
             any: The item associated with the key,
             or None if the key is not found.
         """
-        if key is None:
+        if key is None or key not in self.cache_data:
             return None
-
-        if key in self.cache_data:
-            # Update access frequency
-            if key in self.access_frequency:
-                self.access_frequency[key] += 1
-            else:
-                self.access_frequency[key] = 1
-
-            # Update access order (move key to the end)
-            if key in self.access_order:
-                self.access_order.remove(key)
-            self.access_order.append(key)
-
-            return self.cache_data[key]
-        else:
-            return None
+        self.frequency[key] += 1
+        self.usage_order[key] = self.current_time
+        self.current_time += 1
+        return self.cache_data[key]
