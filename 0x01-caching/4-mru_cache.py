@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MRU Caching system demonstration"""
 
-
+from collections import OrderedDict
 BaseCaching = __import__('base_caching').BaseCaching
 
 
@@ -16,6 +16,7 @@ class MRUCache(BaseCaching):
         """Constructor initialization
         """
         super().__init__()
+        self.cache_data = OrderedDict()
 
     def put(self, key, item):
         """Updates the cache with the given key and item.
@@ -26,11 +27,10 @@ class MRUCache(BaseCaching):
         """
         if key is not None and item is not None:
             if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                # Find the Most Recently Used item and remove it
-                # Get the last key (most recent)
-                mru_key = next(reversed(self.cache_data))
-                print("DISCARD: {}".format(mru_key))  # Print key discarded
-                del self.cache_data[mru_key]  # Rm the most recently used item
+                # Evict the most recently used item
+                mru_key = next(reversed(list(self.cache_data.items())))
+                print(f"DISCARD: {mru_key[0]}")  # Print key discarded
+                del self.cache_data[mru_key[0]]  # Remove the most recent item
             self.cache_data[key] = item  # Add or update the item in the cache
 
     def get(self, key):
@@ -45,7 +45,6 @@ class MRUCache(BaseCaching):
         """
         if key is not None and key in self.cache_data:
             item = self.cache_data[key]
-            # No need to adjust order in MRU,
-            # as get operation already makes it most recent
+            # Accessing the item makes it the most recently used
             return item
         return None
